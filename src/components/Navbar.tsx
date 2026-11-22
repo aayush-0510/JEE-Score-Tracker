@@ -97,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Quick Action Buttons (Compact on Mobile) */}
+          {/* Quick Action Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={handleExport}
@@ -133,8 +133,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Scrollable Tab Navigation Bar (Touch-Optimized) */}
-        <div className="flex space-x-1 overflow-x-auto pb-2 pt-1 border-t border-slate-800/50 scrollbar-none -mx-1 px-1 touch-pan-x">
+        {/* Scrollable Tab Navigation Bar */}
+        <div className="flex space-x-1 overflow-x-auto pb-2 pt-1 border-t border-slate-800/50 scrollbar-none -mx-1 px-1">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (

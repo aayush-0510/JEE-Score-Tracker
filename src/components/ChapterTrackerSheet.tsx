@@ -5,8 +5,9 @@ import {
   Search, 
   Check, 
   ExternalLink, 
-  Layers, 
-  CheckCircle2,
+  LayoutGrid, 
+  Table2, 
+  ChevronRight,
   BookOpen
 } from 'lucide-react';
 import { ChapterChallengeRow, SpecialContentItem, SubjectName } from '../types';
@@ -28,6 +29,7 @@ export const ChapterTrackerSheet: React.FC<ChapterTrackerSheetProps> = ({
   );
   const [searchFilter, setSearchFilter] = useState('');
   const [blockFilter, setBlockFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
 
   const handleSubjectChange = (newSub: SubjectName) => {
     setCurrentSubject(newSub);
@@ -73,7 +75,6 @@ export const ChapterTrackerSheet: React.FC<ChapterTrackerSheetProps> = ({
     });
   }, [sheetData, blockFilter, searchFilter]);
 
-  // Clean Statistics
   const stats = useMemo(() => {
     let totalCells = 0;
     let checkedCells = 0;
@@ -104,7 +105,7 @@ export const ChapterTrackerSheet: React.FC<ChapterTrackerSheetProps> = ({
   const meta = {
     physics: {
       title: 'Physics 15 Ultimate Challenges',
-      subtitle: 'Based on Eduniti 1800 Top PYQs & Revision Framework',
+      subtitle: 'Eduniti 1800 Top PYQs & Revision Tracker',
       refName: 'HCV Qs',
       rankBooster: 'RBS 1.0',
     },
@@ -123,80 +124,105 @@ export const ChapterTrackerSheet: React.FC<ChapterTrackerSheetProps> = ({
   }[currentSubject];
 
   return (
-    <div className="space-y-5 max-w-[98vw] mx-auto pb-12">
-      {/* Header and Subject Switcher */}
-      <div className="bg-[#0f1420] rounded-xl border border-slate-800 p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 sm:space-y-5 max-w-[98vw] mx-auto pb-12 px-1 sm:px-0">
+      {/* Header Card */}
+      <div className="bg-[#0f1420] rounded-xl border border-slate-800 p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white tracking-tight">{meta.title}</h1>
-              <span className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
-                {stats.percent}% Completed
+              <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">{meta.title}</h1>
+              <span className="text-[11px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
+                {stats.percent}% Done
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">{meta.subtitle}</p>
+            <p className="text-xs text-slate-400 mt-0.5 hidden sm:block">{meta.subtitle}</p>
           </div>
 
-          {/* Clean Subject Switcher */}
-          <div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-800 self-start sm:self-auto">
-            {(['physics', 'chemistry', 'maths'] as const).map((sub) => (
+          {/* Controls: Subject Switcher & Mobile View Toggle */}
+          <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+            {/* Subject Switcher */}
+            <div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-800">
+              {(['physics', 'chemistry', 'maths'] as const).map((sub) => (
+                <button
+                  key={sub}
+                  onClick={() => handleSubjectChange(sub)}
+                  className={`px-2.5 sm:px-3 py-1 rounded-md text-xs font-medium capitalize transition active:scale-95 ${
+                    currentSubject === sub
+                      ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile View Toggle (Cards vs Table) */}
+            <div className="flex sm:hidden items-center bg-slate-900 rounded-lg p-1 border border-slate-800">
               <button
-                key={sub}
-                onClick={() => handleSubjectChange(sub)}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-medium capitalize transition ${
-                  currentSubject === sub
-                    ? 'bg-blue-600 text-white font-semibold shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                onClick={() => setViewMode('cards')}
+                className={`p-1.5 rounded text-xs transition ${
+                  viewMode === 'cards' ? 'bg-slate-800 text-white font-bold' : 'text-slate-400'
                 }`}
+                title="Card View"
               >
-                {sub}
+                <LayoutGrid className="w-3.5 h-3.5" />
               </button>
-            ))}
+              <button
+                onClick={() => setViewMode('table')}
+                className={`p-1.5 rounded text-xs transition ${
+                  viewMode === 'table' ? 'bg-slate-800 text-white font-bold' : 'text-slate-400'
+                }`}
+                title="Table View"
+              >
+                <Table2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Minimal progress indicators */}
-        <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-slate-800/80 text-xs text-slate-400">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-3 pt-3 border-t border-slate-800/80 text-[11px] sm:text-xs text-slate-400">
           <div>
-            <span>NCERT Read: </span>
-            <strong className="text-slate-200">{stats.ncertCount} / {stats.totalChapters}</strong>
+            <span>NCERT: </span>
+            <strong className="text-slate-200">{stats.ncertCount}/{stats.totalChapters}</strong>
           </div>
           <span className="text-slate-700">•</span>
           <div>
-            <span>Revision 1 (R1): </span>
-            <strong className="text-slate-200">{stats.r1Count} chapters</strong>
+            <span>R1: </span>
+            <strong className="text-slate-200">{stats.r1Count} ch</strong>
           </div>
           <span className="text-slate-700">•</span>
           <div>
-            <span>Revision 2 (R2): </span>
-            <strong className="text-slate-200">{stats.r2Count} chapters</strong>
+            <span>R2: </span>
+            <strong className="text-slate-200">{stats.r2Count} ch</strong>
           </div>
         </div>
 
         {/* Filter bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-3 pt-3 border-t border-slate-800/60">
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mt-3 pt-3 border-t border-slate-800/60">
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 sm:pb-0 touch-pan-x">
             <button
               onClick={() => setBlockFilter('all')}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition ${
+              className={`px-2.5 py-1 rounded text-xs font-medium whitespace-nowrap transition active:scale-95 ${
                 blockFilter === 'all'
                   ? 'bg-slate-800 text-white font-semibold'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
-              All Chapters ({sheetData.length})
+              All ({sheetData.length})
             </button>
             {blocks.map((blk) => (
               <button
                 key={blk}
                 onClick={() => setBlockFilter(blk)}
-                className={`px-2.5 py-1 rounded text-xs font-medium whitespace-nowrap transition ${
+                className={`px-2.5 py-1 rounded text-xs font-medium whitespace-nowrap transition active:scale-95 ${
                   blockFilter === blk
                     ? 'bg-slate-800 text-white font-semibold'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                {blk}
+                {blk.replace('Block ', 'B')}
               </button>
             ))}
           </div>
@@ -214,31 +240,84 @@ export const ChapterTrackerSheet: React.FC<ChapterTrackerSheetProps> = ({
         </div>
       </div>
 
-      {/* Sheet Table */}
-      <div className="bg-[#0f1420] rounded-xl border border-slate-800 overflow-hidden">
-        <div className="overflow-x-auto max-h-[68vh]">
+      {/* MOBILE COMPACT CARDS VIEW (Clean, Thumb-Friendly for Phone screens) */}
+      <div className={`${viewMode === 'cards' ? 'block sm:hidden' : 'hidden'} space-y-3`}>
+        {filteredRows.map((row) => (
+          <div key={row.id} className="bg-[#0f1420] rounded-xl border border-slate-800 p-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
+              <div className="truncate">
+                <span className="text-[10px] text-slate-500 font-mono block">
+                  {row.block}
+                </span>
+                <span className="font-semibold text-white text-xs truncate">
+                  {row.chapter}
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-slate-400 bg-slate-900 px-2 py-0.5 rounded shrink-0">
+                {row.totalQues}Q
+              </span>
+            </div>
+
+            {/* Quick Challenge Toggle Pills */}
+            <div className="mt-2.5">
+              <span className="text-[10px] text-slate-500 uppercase font-semibold block mb-1.5">
+                PYQ Challenges
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <MobilePill checked={row.pyq2019} label="2019" onToggle={() => handleToggleCell(row.id, 'pyq2019')} />
+                <MobilePill checked={row.top200_2023} label="'23" onToggle={() => handleToggleCell(row.id, 'top200_2023')} />
+                <MobilePill checked={row.top200_2024} label="'24" onToggle={() => handleToggleCell(row.id, 'top200_2024')} />
+                <MobilePill checked={row.top200_2022} label="'22" onToggle={() => handleToggleCell(row.id, 'top200_2022')} />
+                <MobilePill checked={row.top200_2025} label="'25" onToggle={() => handleToggleCell(row.id, 'top200_2025')} />
+                <MobilePill checked={row.top200_2021} label="'21" onToggle={() => handleToggleCell(row.id, 'top200_2021')} />
+                <MobilePill checked={row.top100_2020} label="'20" onToggle={() => handleToggleCell(row.id, 'top100_2020')} />
+                <MobilePill checked={row.top200_2026} label="'26" onToggle={() => handleToggleCell(row.id, 'top200_2026')} />
+                <MobilePill checked={row.theoreticalQues} label="Theory" onToggle={() => handleToggleCell(row.id, 'theoreticalQues')} />
+              </div>
+            </div>
+
+            {/* Books & Revisions */}
+            <div className="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <MobilePill checked={row.standardReference} label={meta.refName} onToggle={() => handleToggleCell(row.id, 'standardReference')} />
+                <MobilePill checked={row.rankBooster} label={meta.rankBooster} onToggle={() => handleToggleCell(row.id, 'rankBooster')} />
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <MobilePill checked={row.ncertRead} label="NCERT" isEmerald onToggle={() => handleToggleCell(row.id, 'ncertRead')} />
+                <MobilePill checked={row.r1} label="R1" isEmerald onToggle={() => handleToggleCell(row.id, 'r1')} />
+                <MobilePill checked={row.r2} label="R2" onToggle={() => handleToggleCell(row.id, 'r2')} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* FULL TABLE VIEW (Optimized with Frozen Left Column and Touch Scrolling) */}
+      <div className={`${viewMode === 'table' ? 'block' : 'hidden sm:block'} bg-[#0f1420] rounded-xl border border-slate-800 overflow-hidden`}>
+        <div className="overflow-x-auto max-h-[68vh] touch-pan-x">
           <table className="w-full text-center text-xs">
             <thead className="sticky top-0 z-20 bg-[#121927] text-slate-300 border-b border-slate-700/80">
               <tr className="divide-x divide-slate-800 text-[11px] font-medium">
-                <th className="py-2.5 px-3 text-left min-w-[210px] sticky left-0 z-30 bg-[#121927] text-white">
-                  Chapter Name
+                <th className="py-2.5 px-3 text-left min-w-[170px] sm:min-w-[210px] sticky left-0 z-30 bg-[#121927] text-white">
+                  Chapter
                 </th>
-                <th className="py-2 px-2 min-w-[60px] text-slate-300">2019</th>
-                <th className="py-2 px-2 min-w-[60px] text-slate-300">2023</th>
-                <th className="py-2 px-2 min-w-[60px] text-slate-300">2024</th>
-                <th className="py-2 px-2 min-w-[60px] text-slate-300">2022</th>
-                <th className="py-2 px-2 min-w-[60px] text-slate-300">2025</th>
-                <th className="py-2 px-2 min-w-[60px] text-slate-300">2021</th>
-                <th className="py-2 px-2 min-w-[60px] text-slate-300">2020</th>
-                <th className="py-2 px-2 min-w-[60px] text-slate-300">2026</th>
-                <th className="py-2 px-2 min-w-[65px] text-slate-300">Theory</th>
-                <th className="py-2 px-2 min-w-[55px] text-slate-200 bg-slate-800/60 font-semibold">Total Q</th>
-                <th className="py-2 px-2 min-w-[85px] text-slate-300">{meta.refName}</th>
-                <th className="py-2 px-2 min-w-[70px] text-slate-300">{meta.rankBooster}</th>
-                <th className="py-2 px-2 min-w-[65px] text-slate-300">Sure Shot</th>
-                <th className="py-2 px-2 min-w-[60px] text-slate-300">NCERT</th>
-                <th className="py-2 px-2 min-w-[45px] text-emerald-400 font-semibold">R1</th>
-                <th className="py-2 px-2 min-w-[45px] text-blue-400 font-semibold">R2</th>
+                <th className="py-2 px-1.5 min-w-[50px] text-slate-300">2019</th>
+                <th className="py-2 px-1.5 min-w-[50px] text-slate-300">'23</th>
+                <th className="py-2 px-1.5 min-w-[50px] text-slate-300">'24</th>
+                <th className="py-2 px-1.5 min-w-[50px] text-slate-300">'22</th>
+                <th className="py-2 px-1.5 min-w-[50px] text-slate-300">'25</th>
+                <th className="py-2 px-1.5 min-w-[50px] text-slate-300">'21</th>
+                <th className="py-2 px-1.5 min-w-[50px] text-slate-300">'20</th>
+                <th className="py-2 px-1.5 min-w-[50px] text-slate-300">'26</th>
+                <th className="py-2 px-1.5 min-w-[60px] text-slate-300">Theory</th>
+                <th className="py-2 px-1.5 min-w-[50px] text-slate-200 bg-slate-800/60 font-semibold">Total Q</th>
+                <th className="py-2 px-1.5 min-w-[75px] text-slate-300">{meta.refName}</th>
+                <th className="py-2 px-1.5 min-w-[65px] text-slate-300">{meta.rankBooster}</th>
+                <th className="py-2 px-1.5 min-w-[60px] text-slate-300">Sure Shot</th>
+                <th className="py-2 px-1.5 min-w-[55px] text-slate-300">NCERT</th>
+                <th className="py-2 px-1.5 min-w-[42px] text-emerald-400 font-semibold">R1</th>
+                <th className="py-2 px-1.5 min-w-[42px] text-blue-400 font-semibold">R2</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-slate-300">
@@ -249,13 +328,12 @@ export const ChapterTrackerSheet: React.FC<ChapterTrackerSheetProps> = ({
                     idx % 2 === 0 ? 'bg-[#0f1420]' : 'bg-[#0b0f19]'
                   }`}
                 >
-                  {/* Chapter Name (Sticky Left) */}
-                  <td className="py-2 px-3 text-left font-medium text-slate-200 sticky left-0 z-10 bg-[#0f1420] border-r border-slate-800">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-slate-500 font-mono">
+                  <td className="py-2 px-2.5 sm:px-3 text-left font-medium text-slate-200 sticky left-0 z-10 bg-[#0f1420] border-r border-slate-800">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="text-[10px] text-slate-500 font-mono shrink-0">
                         {row.block.replace('Block ', 'B').slice(0, 3)}
                       </span>
-                      <span className="truncate max-w-[200px]" title={row.chapter}>
+                      <span className="truncate max-w-[140px] sm:max-w-[190px]" title={row.chapter}>
                         {row.chapter}
                       </span>
                     </div>
@@ -288,43 +366,41 @@ export const ChapterTrackerSheet: React.FC<ChapterTrackerSheetProps> = ({
         </div>
       </div>
 
-      {/* Special Topics Table */}
-      <div className="bg-[#0f1420] rounded-xl border border-slate-800 p-5">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <h3 className="text-sm font-semibold text-white">High-Yield Special Challenges</h3>
-          <span className="text-xs text-slate-400">
-            {specialData.filter(s => s.done).length} / {specialData.length} Done
+      {/* Special Topics Section */}
+      <div className="bg-[#0f1420] rounded-xl border border-slate-800 p-4 sm:p-5">
+        <div className="flex items-center justify-between pb-2.5 border-b border-slate-800">
+          <h3 className="text-xs sm:text-sm font-semibold text-white">High-Yield Special Challenges</h3>
+          <span className="text-[11px] text-slate-400">
+            {specialData.filter(s => s.done).length}/{specialData.length} Done
           </span>
         </div>
 
-        <div className="overflow-x-auto mt-3">
+        <div className="overflow-x-auto mt-2.5">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-800 text-slate-400 text-[11px] font-medium">
-                <th className="py-2 px-3 w-10 text-center">#</th>
-                <th className="py-2 px-3">Challenge / Module</th>
-                <th className="py-2 px-3">Resource</th>
-                <th className="py-2 px-3 text-center w-20">Done</th>
-                <th className="py-2 px-3 text-center w-20">Rev 1</th>
-                <th className="py-2 px-3 text-center w-20">Rev 2</th>
+                <th className="py-2 px-2.5 w-8 text-center">#</th>
+                <th className="py-2 px-2.5">Challenge</th>
+                <th className="py-2 px-2.5 text-center w-16">Done</th>
+                <th className="py-2 px-2.5 text-center w-16">R1</th>
+                <th className="py-2 px-2.5 text-center w-16">R2</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {specialData.map((item, idx) => (
                 <tr key={item.id} className="hover:bg-slate-800/30">
-                  <td className="py-2.5 px-3 text-center text-slate-500">{idx + 1}</td>
-                  <td className="py-2.5 px-3 font-medium text-slate-200">{item.title}</td>
-                  <td className="py-2.5 px-3 text-blue-400 flex items-center gap-1">
-                    <span>{item.linkText}</span>
-                    <ExternalLink className="w-3 h-3 opacity-60" />
+                  <td className="py-2 px-2.5 text-center text-slate-500">{idx + 1}</td>
+                  <td className="py-2 px-2.5 font-medium text-slate-200">
+                    <div>{item.title}</div>
+                    <span className="text-[10px] text-blue-400">{item.linkText}</span>
                   </td>
-                  <td className="py-2.5 px-3 text-center">
+                  <td className="py-2 px-2.5 text-center">
                     <CleanCheckbox checked={item.done} onToggle={() => handleToggleSpecial(item.id, 'done')} isEmerald />
                   </td>
-                  <td className="py-2.5 px-3 text-center">
+                  <td className="py-2 px-2.5 text-center">
                     <CleanCheckbox checked={item.r1} onToggle={() => handleToggleSpecial(item.id, 'r1')} />
                   </td>
-                  <td className="py-2.5 px-3 text-center">
+                  <td className="py-2 px-2.5 text-center">
                     <CleanCheckbox checked={item.r2} onToggle={() => handleToggleSpecial(item.id, 'r2')} />
                   </td>
                 </tr>
@@ -337,7 +413,7 @@ export const ChapterTrackerSheet: React.FC<ChapterTrackerSheetProps> = ({
   );
 };
 
-// Clean minimalist checkbox
+// Clean Checkbox for Table
 const CleanCheckbox: React.FC<{ checked: boolean; onToggle: () => void; isEmerald?: boolean }> = ({
   checked,
   onToggle,
@@ -347,7 +423,7 @@ const CleanCheckbox: React.FC<{ checked: boolean; onToggle: () => void; isEmeral
     <button
       type="button"
       onClick={onToggle}
-      className={`w-5 h-5 mx-auto rounded flex items-center justify-center transition-all ${
+      className={`w-5 h-5 sm:w-5 sm:h-5 mx-auto rounded flex items-center justify-center transition-all active:scale-90 ${
         checked
           ? isEmerald
             ? 'bg-emerald-600 text-white'
@@ -356,6 +432,31 @@ const CleanCheckbox: React.FC<{ checked: boolean; onToggle: () => void; isEmeral
       }`}
     >
       <Check className={`w-3.5 h-3.5 stroke-[2.5] ${checked ? 'opacity-100' : 'opacity-0'}`} />
+    </button>
+  );
+};
+
+// Compact Toggle Pill for Mobile Cards
+const MobilePill: React.FC<{ checked: boolean; label: string; onToggle: () => void; isEmerald?: boolean }> = ({
+  checked,
+  label,
+  onToggle,
+  isEmerald = false,
+}) => {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`px-2 py-1 rounded text-[10px] font-semibold flex items-center gap-1 transition-all active:scale-95 ${
+        checked
+          ? isEmerald
+            ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50'
+            : 'bg-blue-600/30 text-blue-300 border border-blue-500/50'
+          : 'bg-slate-900 text-slate-400 border border-slate-800'
+      }`}
+    >
+      {checked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+      <span>{label}</span>
     </button>
   );
 };
